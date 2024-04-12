@@ -28,6 +28,7 @@ void ChangeSize(GLsizei w, GLsizei h) {
     glLoadIdentity();
 }
 int main(int argc, char** argv) {
+    
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutCreateWindow("GLRect");
     glutDisplayFunc(RenderScene);
