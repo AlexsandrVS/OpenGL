@@ -1,6 +1,6 @@
 #include <iostream>
 
 int main () {
-    std::cout << (int)((char) - (long) - 127) << "\n\n\n";
+    std::cout << (int)((int)+(long) -1) << "\n\n\n"; /// /*- (long) - 127*/
     return 0;
 }

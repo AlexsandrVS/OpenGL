@@ -84,18 +84,18 @@ void RenderScene(void) {
     glVertex3f(-65, 40, 1.0);
     glEnd();
 
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glEnable(GL_POLYGON_STIPPLE);
-    glPolygonStipple(fire);
-    glBegin(GL_TRIANGLES);
+    glColor3f(1.0f, 0.0f, 0.0f); //цвет маски
+    glEnable(GL_POLYGON_STIPPLE); //вкл макси
+    glPolygonStipple(fire);       //
+    glBegin(GL_TRIANGLES);        // начало рисоования полигонов
     // glColor3f(1.0, 0.0, 0.0);
     glVertex3f(-30, -25, 0.0);
     // glColor3f(0.0, 1.0, 0.0);
     glVertex3f(-140, -25, 1.0);
     // glColor3f(0.0, 0, 1.0);
     glVertex3f(-85, 50, 1.0);
-    glEnd();
-    glDisable(GL_POLYGON_STIPPLE);
+    glEnd();                       // закончили рисовать полигоны
+    glDisable(GL_POLYGON_STIPPLE); // выкл макси, маска примениться ко всему полигону с ныжным цветом
 
     glBegin(GL_TRIANGLES);
     glColor3f(1.0, 0.0, 0.0);
