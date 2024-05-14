@@ -155,13 +155,15 @@ public:
                 glEnable(GL_LIGHTING);
         }
         glEndList();
+                                // Устанавливаем цвет материала
+                                GLfloat specref[] = { 1.0f, 1.0f, 1.0f, 1.0f};
 
-        // Вывод информации о загруженной модели
-        printf("Model: %s\n", filename);
-        printf("Vertices: %d\n", vertices.size());
-        printf("Texcoords: %d\n", texcoords.size());
-        printf("Normals: %d\n", normals.size());
-        printf("Faces: %d\n", faces.size());
+                                // Свойства материалов согласуются с кодами glColor
+                                glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+
+                                // С этого момента все материалы имеют максимальный коэффициент зеркального отражения
+                                glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
+                                glMateriali(GL_FRONT, GL_SHININESS, 10);
 
         // Очистка памяти после загрузки модели
         for (float* f : vertices)
@@ -227,18 +229,21 @@ void setupLighting() {
     
     // Устанавливаем цвет освещения
     GLfloat light_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    
+
     // Устанавливаем позицию источника света 0
     float position[] = { 0,10,20 };
     GLfloat light0_position[] = { 5.0f, 5.0f, 5.0f, 1.0f };
     glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_color);
-    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT0);    
     
     // Повторяем для источников света 1, 2 и 3
     GLfloat light1_position[] = { -5.0f, 5.0f, 5.0f, 1.0f };
     glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, light_color);
+    // Добавляем компонент отраженного света
+    GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glLightfv(GL_LIGHT1, GL_SPECULAR, specular);
     glEnable(GL_LIGHT1);
 
     GLfloat light2_position[] = { 5.0f, -5.0f, 5.0f, 1.0f };
@@ -249,6 +254,7 @@ void setupLighting() {
     GLfloat light3_position[] = { -5.0f, -5.0f, 5.0f, 1.0f };
     glLightfv(GL_LIGHT3, GL_POSITION, light3_position);
     glLightfv(GL_LIGHT3, GL_DIFFUSE, light_color);
+    glLightfv(GL_LIGHT3, GL_SPECULAR, specular);
     glEnable(GL_LIGHT3);
 
     // Включаем освещение и материалы
@@ -260,12 +266,25 @@ void setupLighting() {
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, material_color);
     glEnable(GL_NORMALIZE);
     
-    // Устанавливаем позицию источника света 4 и его диффузный цвет
+    
     GLfloat light4_position[] = { 2.5f, 0.5f, -2.5f, 1.0f };
-    GLfloat light4_diffuse[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+    GLfloat light4_diffuse[] = { 0.0f, 0.0f, 1.0f, 1.0f }; // Синий цвет
     glLightfv(GL_LIGHT4, GL_POSITION, light4_position);
     glLightfv(GL_LIGHT4, GL_DIFFUSE, light4_diffuse);
     glEnable(GL_LIGHT4);
+
+    GLfloat light5_position[] = { 0.5f, 0.0f, -2.5f, 1.0f };
+    GLfloat light5_diffuse[] = { 0.0f, 1.0f, 0.0f, 1.0f }; // Зеленый цвет
+    glLightfv(GL_LIGHT5, GL_POSITION, light5_position);
+    glLightfv(GL_LIGHT5, GL_DIFFUSE, light5_diffuse);
+    glEnable(GL_LIGHT5);
+
+    GLfloat light6_position[] = { -2.0f, 0.0f, -2.5f, 1.0f };
+    GLfloat light6_diffuse[] = { 1.0f, 0.0f, 0.0f, 1.0f }; // Красный цвет
+    glLightfv(GL_LIGHT6, GL_POSITION, light6_position);
+    glLightfv(GL_LIGHT6, GL_DIFFUSE, light6_diffuse);
+    glEnable(GL_LIGHT6);
+
     
     // Восстанавливаем предыдущее состояние матрицы
     glPopMatrix();
@@ -396,7 +415,7 @@ Camera cam;             // Экземпляр класса камеры
 FlatArea flatarea(500, 150);  // Экземпляр класса FlatArea для отображения плоской области
 
 bool showShadow = true; // Флаг для отображения теней
-bool enRotate = false;   // Флаг для включения вращения
+bool enRotate = false;   // Флаг для включения вращен-ия
 
 #pragma endregion 
 #pragma region display
@@ -458,33 +477,30 @@ void processNormalKeys(unsigned char key, int x, int y) {
 
 	if (key == 27) exit(0);
 	if (key == 32) cam.Setup(4, 1, 4, -M_PI / 4, 0);
-	if (key == 'w' || key == 'W') cam.Move(1);
-	if (key == 's' || key == 'S') cam.Move(-1);
-	if (key == 'a' || key == 'A') cam.StepH(-1);
-	if (key == 'd' || key == 'D') cam.StepH(1);
+	if (key == 'w' || key == 'W') cam.Move(0.1);
+	if (key == 's' || key == 'S') cam.Move(-0.1);
+	if (key == 'a' || key == 'A') cam.StepH(-0.1);
+	if (key == 'd' || key == 'D') cam.StepH(0.1);
 	if (key == '1') {
-		if (glIsEnabled(GL_LIGHT0))
-			glDisable(GL_LIGHT0);
-		else
-			glEnable(GL_LIGHT0);
+		(glIsEnabled(GL_LIGHT0))?glDisable(GL_LIGHT0):glEnable(GL_LIGHT0);
 	}
 	if (key == '2') {
-		if (glIsEnabled(GL_LIGHT1))
-			glDisable(GL_LIGHT1);
-		else
-			glEnable(GL_LIGHT1);
+		(glIsEnabled(GL_LIGHT1))?glDisable(GL_LIGHT1):glEnable(GL_LIGHT1);
 	}
 	if (key == '3') {
-		if (glIsEnabled(GL_LIGHT2))
-			glDisable(GL_LIGHT2);
-		else
-			glEnable(GL_LIGHT2);
+		(glIsEnabled(GL_LIGHT2))?glDisable(GL_LIGHT2):glEnable(GL_LIGHT2);
 	}
 	if (key == '4') {
-		if (glIsEnabled(GL_LIGHT3))
-			glDisable(GL_LIGHT3);
-		else
-			glEnable(GL_LIGHT3);
+		(glIsEnabled(GL_LIGHT3))?glDisable(GL_LIGHT3):glEnable(GL_LIGHT3);
+	}
+    if (key == 'g') {
+		(glIsEnabled(GL_LIGHT5))?glDisable(GL_LIGHT5):glEnable(GL_LIGHT5);
+	}
+    if (key == 'b') {
+		(glIsEnabled(GL_LIGHT4))?glDisable(GL_LIGHT4):glEnable(GL_LIGHT4);
+	}
+    if (key == 'v') {
+		(glIsEnabled(GL_LIGHT6))?glDisable(GL_LIGHT6):glEnable(GL_LIGHT6);
 	}
 	if (key == '5') {
         if (glIsEnabled(GL_COLOR_MATERIAL))
@@ -496,21 +512,22 @@ void processNormalKeys(unsigned char key, int x, int y) {
 		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
     }
 	if (key == '6') {
-		if (glIsEnabled(GL_COLOR_MATERIAL))
-			glDisable(GL_COLOR_MATERIAL);
-		else
-			glEnable(GL_COLOR_MATERIAL);
-		glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-		glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+        (glIsEnabled(GL_COLOR_MATERIAL)) ? glDisable(GL_COLOR_MATERIAL) : (glEnable(GL_COLOR_MATERIAL), glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE), glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE));
 	}
 	if (key == '7') {
 		if (glIsEnabled(GL_COLOR_MATERIAL))
 			glDisable(GL_COLOR_MATERIAL);
 		else
 			glEnable(GL_COLOR_MATERIAL);
-		GLfloat material_diffuse[] = { 0.0f, 1.0f, 0.0f, 1.0f };
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, material_diffuse);
-		glColorMaterial(GL_BACK, GL_AMBIENT_AND_DIFFUSE);
+		// Устанавливаем цвет материала
+        GLfloat specref[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+
+        // Свойства материалов согласуются с кодами glColor
+        glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+
+        // С этого момента все материалы имеют максимальный коэффициент зеркального отражения
+        glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
+        glMateriali(GL_FRONT, GL_SHININESS, 1);
 	}
 	if (key == '8') {
 		GLfloat viewer_pos[] = { 1.0f, 0.0f, 1.0f, 0.0f };
@@ -531,22 +548,11 @@ void processNormalKeys(unsigned char key, int x, int y) {
 			glEnable(GL_LIGHT0);
 	if (key == 'r')
 		setupLighting();
-	glutPostRedisplay();
-	if (key == 'z') {
+	    glutPostRedisplay();
+	if (key == 'p') {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_3D);
-		glEnable(GL_LIGHT0);
-		glEnable(GL_LIGHT1);
-		glEnable(GL_LIGHT2);
-		glEnable(GL_LIGHT3);
 		model.load("Tricycle.obj");
 		glutPostRedisplay();
-	}
-
-	if (key == 'x') {
-		if (glIsEnabled(GL_LIGHT4))
-			glDisable(GL_LIGHT4);
-		else
-			glEnable(GL_LIGHT4);
 	}
 	if (key == 't' || key == 'T') {
 		showShadow = !showShadow;
@@ -623,32 +629,29 @@ void update(int value) {
 
 int main(int argc, char* argv[]) {
 
-	printf("Управление:\n");
-    printf("WASD: Движение камеры вперед, назад, влево и вправо\n");
-    printf("1-4: Включение и выключение источников света\n");
-    printf("5: Включение или выключение цветового материала и установка цвета фонового освещения\n");
-    printf("6: Включение или выключение двустороннего освещения\n");
-    printf("7: Включение или выключение цветового материала и установка коэффициента рассеивания материала на передней стороне\n");
-    printf("8: Установка положения наблюдателя\n");
-    printf("9: Установка распределения освещения в пространстве\n");
-    printf("0: Сброс настроек освещения\n");
-    printf("F: Включение и выключение фонаря\n");
-    printf("R: Перезагрузка настроек освещения\n");
-    printf("Z: Загрузить модель Tricycle.obj\n");
-    printf("X: Включение и выключение дополнительного источника света\n");
-    printf("T: Включение и выключение куба\n");
-    printf("Y: Включение и выключение вращения куба\n");
-    printf("M: Сброс всех настроек\n");
-    printf("ESC: Выход из программы\n");
+	// printf("Управление:\n");
+    // printf("WASD: Движение камеры вперед, назад, влево и вправо\n");
+    // printf("1-4: Включение и выключение источников света\n");
+    // printf("5: Включение или выключение цветового материала и установка цвета фонового освещения\n");
+    // printf("6: Включение или выключение двустороннего освещения\n");
+    // printf("7: Включение отражения\n");
+    // printf("8: Установка положения наблюдателя\n");
+    // printf("9: Установка распределения освещения в пространстве\n");
+    // printf("0: Сброс настроек освещения\n");
+    // printf("F: Включение и выключение фонаря\n");
+    // printf("R: Перезагрузка настроек освещения\n");
+    // printf("Z: Загрузить модель Tricycle.obj\n");
+    // printf("X: Включение и выключение дополнительного источника света\n");
+    // printf("T: Включение и выключение куба\n");
+    // printf("Y: Включение и выключение вращения куба\n");
+    // printf("M: Сброс всех настроек\n");
+    // printf("ESC: Выход из программы\n");
 
     // Инициализация GLUT и создание окна
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowSize(1200, 800); // Задайте желаемый размер окна
     glutCreateWindow("OpenGL");
-
-    // Убрать курсор мыши
-    glutSetCursor(GLUT_CURSOR_NONE);
 
     // Включить проверку глубины
     glEnable(GL_DEPTH_TEST);
@@ -664,7 +667,6 @@ int main(int argc, char* argv[]) {
     glutKeyboardFunc(processNormalKeys);
     glutTimerFunc(25, update, 0);
 
-    // Запуск основного цикла GLUT
     glutMainLoop();
 
     return 0;
