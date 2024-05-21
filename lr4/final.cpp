@@ -1,8 +1,5 @@
-#pragma region include
-#define _USE_MATH_DEFINES
-#define STB_IMAGE_IMPLEMENTATION
-#define GLEW_STATIC
-#define _CRT_SECURE_NO_WARNINGS
+#pragma region includes
+
 #include "GL/glew.h"
 #include "GL/glut.h" 
 #include <GL/gl.h>
@@ -18,11 +15,10 @@
 #include <cstdio>
 
 using namespace std;
-using namespace this_thread;     // sleep_for, sleep_until
-using namespace chrono_literals; // ns, us, ms, s, h, etc.
+using namespace this_thread;
+using namespace chrono_literals; 
 using chrono::system_clock;
-#pragma endregion
-#pragma region global perem
+
 // Объявление переменных для хранения позиции мыши, параметров камеры и цвета
 float mouseX, mouseY;
 float cameraDistanceX;
@@ -42,8 +38,11 @@ float r = 1.0;
 float g = 0;
 float b = 0;
 int d = 0;
+
 #pragma endregion
+
 #pragma region class_model
+
 class Model {
 private:
     // Вложенный класс Face для представления граней модели
@@ -181,9 +180,13 @@ public:
     // Метод draw для отображения модели
     void draw() { glCallList(list); }
 };
+
 Model model;
+
 #pragma endregion
+
 #pragma region init
+
 void init() {
     // Включение освещения и источника света
     glEnable(GL_LIGHTING);
@@ -217,9 +220,22 @@ void init() {
 
     // Включение буфера глубины
     glEnable(GL_DEPTH_TEST);
+
+    // Включение и настройка туманов
+    glFogi(GL_FOG_MODE, GL_LINEAR);
+	GLfloat fogColor[] = { 0.0f, 0.5f, 0.5f, 1.0f };
+	glFogfv(GL_FOG_COLOR, fogColor);
+	glFogf(GL_FOG_DENSITY, 0.1f);
+	glHint(GL_FOG_HINT, GL_DONT_CARE);
+	glFogf(GL_FOG_START, 10.0f);
+	glFogf(GL_FOG_END, 50.0f);
+
 }
+
 #pragma endregion
-#pragma region setupLighting
+
+#pragma region setup_lighting
+
 void setupLighting() {
     // Сохраняем текущую матрицу видовой
     glPushMatrix();
@@ -289,8 +305,11 @@ void setupLighting() {
     // Восстанавливаем предыдущее состояние матрицы
     glPopMatrix();
 }
+
 #pragma endregion
-#pragma region Camera
+
+#pragma region camera
+
 class Camera {
     double x, y, z;     // Позиция камеры в трехмерном пространстве
     double ah, av;      // Углы поворота камеры по горизонтали и вертикали
@@ -369,6 +388,7 @@ public:
         printf("   (dx, dy, dz) = (%7.3f, %7.3f, %7.3f\n", dx, dy, dz);
     }
 };
+
 class FlatArea {
 public:
     int k;          // Количество ячеек на стороне квадрата
@@ -412,13 +432,16 @@ public:
 };
 
 Camera cam;             // Экземпляр класса камеры
-FlatArea flatarea(500, 150);  // Экземпляр класса FlatArea для отображения плоской области
+FlatArea flatarea(100, 50);  // Экземпляр класса FlatArea для отображения плоской области
 
 bool showShadow = true; // Флаг для отображения теней
 bool enRotate = false;   // Флаг для включения вращен-ия
+bool blik = false;
 
 #pragma endregion 
+
 #pragma region display
+
 void display(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -435,26 +458,49 @@ void display(void) {
         glPushMatrix();
         glTranslatef(-3, 3, -2.5);
         glRotatef(angle, 1.0f, 1.0f, 1.0f);
-        glutSolidCube(2.0f);
+        glutSolidTetrahedron();
         glPopMatrix();
+
         if (enRotate) {
             angle += 2.0f;
             if (angle > 360) {
                 angle -= 360;
             }
         }
+
+        // Рисуем тень тетраэдра
         glDisable(GL_LIGHTING);
         glPushMatrix();
         glTranslatef(-7, 0.1, -5.5);
         glRotatef(angle, 0.0f, 1.0f, 0.0f);
         glScalef(1.0f, 0.01f, 1.0f);
         glColor4f(0.0f, 0.0f, 0.0f, 0.5f);
-        glutSolidCube(2.0f);
+        glutSolidTetrahedron();
         glPopMatrix();
         glEnable(GL_LIGHTING);
     }
+
+    // Добавляем шар для отображения блика
+    if (blik) {
+        glPushMatrix();
+        glTranslatef(0, 1, 0);
+        GLfloat mat_diffuse[] = {0.8, 0.8, 0.8, 1.0};
+        GLfloat mat_specular[] = {0.0, 1.0f, 0.0, 1.0};
+        GLfloat mat_shininess[] = {100.0};
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+        glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+        glutSolidSphere(1.0, 50, 50);
+        glPopMatrix();
+    }
+    // else {
+    //     // Выключаем установку материала при выключенном блике
+    //     glDisable(GL_COLOR_MATERIAL);
+    // }
+
     glutSwapBuffers();
 }
+
 void reshape(int w, int h) {
     // Сохранение новых размеров окна
     wight = w;
@@ -471,9 +517,59 @@ void reshape(int w, int h) {
     // Возвращение к видовой матрице
     glMatrixMode(GL_MODELVIEW);
 }
+
 #pragma endregion 
+
 #pragma region control
+
 void processNormalKeys(unsigned char key, int x, int y) {
+
+    /*
+    Основные клавиши управления
+    Esc (27): Завершает работу программы.
+    Space (32): Устанавливает параметры камеры (позиция и направление).
+
+    Управление камерой
+    w: Перемещение камеры вперед.
+    s: Перемещение камеры назад.
+    a: Перемещение камеры влево.
+    d: Перемещение камеры вправо.
+
+    Управление освещением
+    1: Включение/выключение первого источника света (GL_LIGHT0).
+    2: Включение/выключение второго источника света (GL_LIGHT1).
+    3: Включение/выключение третьего источника света (GL_LIGHT2).
+    4: Включение/выключение четвертого источника света (GL_LIGHT3).
+    g: Включение/выключение пятого источника света (GL_LIGHT5).
+    b: Включение/выключение шестого источника света (GL_LIGHT4).
+    r: Включение/выключение седьмого источника света (GL_LIGHT6).
+
+    // Настройки материалов и освещения
+    // 5: Включение/выключение использования материала цвета и установка фонового освещения.
+    // 6: Включение/выключение использования материала цвета и включение двустороннего освещения.
+    // 7: Включение/выключение использования материала цвета и установка коэффициента рассеивания материала.
+    // 8: Установка положения наблюдателя.
+    // 9: Установка распределения освещения в пространстве (SEPARATE_SPECULAR_COLOR).
+    // 0: Установка распределения освещения в пространстве (SINGLE_COLOR).
+
+    Прочие функции
+    o: Перезапуск настройки освещения и камеры.
+    p: Установка режима отображения полигонов и загрузка модели.
+
+    Управление тенями и вращением
+    q: Включение/выключение отображения теней.
+    e: Включение/выключение вращения сцены.
+
+    Управление бликом и туманом
+    f: Включение/выключение бликов.
+    t: Включение/выключение тумана.
+    y: Установка квадратичного экспоненциального режима тумана (GL_FOG_MODE, GL_EXP2).
+    u: Установка экспоненциального режима тумана (GL_FOG_MODE, GL_EXP).
+    i: Установка линейного режима тумана (GL_FOG_MODE, GL_LINEAR). 
+    + k -> red 
+    + j -> yellow
+    */
+
 
 	if (key == 27) exit(0);
 	if (key == 32) cam.Setup(4, 1, 4, -M_PI / 4, 0);
@@ -499,80 +595,117 @@ void processNormalKeys(unsigned char key, int x, int y) {
     if (key == 'b') {
 		(glIsEnabled(GL_LIGHT4))?glDisable(GL_LIGHT4):glEnable(GL_LIGHT4);
 	}
-    if (key == 'v') {
+    if (key == 'r') {
 		(glIsEnabled(GL_LIGHT6))?glDisable(GL_LIGHT6):glEnable(GL_LIGHT6);
 	}
-	if (key == '5') {
-        if (glIsEnabled(GL_COLOR_MATERIAL))
-            glDisable(GL_COLOR_MATERIAL);
-		else
-			glEnable(GL_COLOR_MATERIAL);
-		GLfloat ambient_color[] = { 0.0f, 0.0f, 1.0f, 1.0f };
-		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
-		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    }
-	if (key == '6') {
-        (glIsEnabled(GL_COLOR_MATERIAL)) ? glDisable(GL_COLOR_MATERIAL) : (glEnable(GL_COLOR_MATERIAL), glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE), glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE));
-	}
-	if (key == '7') {
-		if (glIsEnabled(GL_COLOR_MATERIAL))
-			glDisable(GL_COLOR_MATERIAL);
-		else
-			glEnable(GL_COLOR_MATERIAL);
-		// Устанавливаем цвет материала
-        GLfloat specref[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+	// if (key == '5') {
+    //     if (glIsEnabled(GL_COLOR_MATERIAL))
+    //         glDisable(GL_COLOR_MATERIAL);
+	// 	else
+	// 		glEnable(GL_COLOR_MATERIAL);
+	// 	GLfloat ambient_color[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	// 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
+	// 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+    // }
+	// if (key == '6') {
+    //     (glIsEnabled(GL_COLOR_MATERIAL)) ? glDisable(GL_COLOR_MATERIAL) : (glEnable(GL_COLOR_MATERIAL), glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE), glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE));
+	// }
+	// if (key == '7') {
+	// 	if (glIsEnabled(GL_COLOR_MATERIAL))
+	// 		glDisable(GL_COLOR_MATERIAL);
+	// 	else
+	// 		glEnable(GL_COLOR_MATERIAL);
+	// 	// Устанавливаем цвет материала
+    //     GLfloat specref[] = { 1.0f, 1.0f, 1.0f, 1.0f};
 
-        // Свойства материалов согласуются с кодами glColor
-        glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+    //     // Свойства материалов согласуются с кодами glColor
+    //     glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
-        // С этого момента все материалы имеют максимальный коэффициент зеркального отражения
-        glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
-        glMateriali(GL_FRONT, GL_SHININESS, 1);
-	}
-	if (key == '8') {
-		GLfloat viewer_pos[] = { 1.0f, 0.0f, 1.0f, 0.0f };
-		glLightModelfv(GL_LIGHT_MODEL_LOCAL_VIEWER, viewer_pos);
-		glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR);
-	}
-	if (key == '9') {
-		glLightModelf(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-		glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR);
-	}
-	if (key == '0') {
-		glLightModelf(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
-	}
-	if (key == 'F' || key == 'f')
-		if (glIsEnabled(GL_LIGHT0))
-			glDisable(GL_LIGHT0);
-		else
-			glEnable(GL_LIGHT0);
-	if (key == 'r')
-		setupLighting();
-	    glutPostRedisplay();
+    //     // С этого момента все материалы имеют максимальный коэффициент зеркального отражения
+    //     glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
+    //     glMateriali(GL_FRONT, GL_SHININESS, 1);
+	// }
+	// if (key == '8') {
+	// 	GLfloat viewer_pos[] = { 1.0f, 0.0f, 1.0f, 0.0f };
+	// 	glLightModelfv(GL_LIGHT_MODEL_LOCAL_VIEWER, viewer_pos);
+	// 	glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR);
+	// }
+	// if (key == '9') {
+	// 	glLightModelf(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+	// 	glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR);
+	// }
+	// if (key == '0') {
+	// 	glLightModelf(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
+	// }
+
 	if (key == 'p') {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_3D);
 		model.load("Tricycle.obj");
 		glutPostRedisplay();
 	}
-	if (key == 't' || key == 'T') {
+	if (key == 'q') {
 		showShadow = !showShadow;
 		glutPostRedisplay();
 	}
-	if (key == 'y' || key == 'Y') {
+	if (key == 'e') {
 		enRotate = !enRotate;
 		glutPostRedisplay();
 	}
-	if (key == 'm') {
+	if (key == 'o') {
 		setupLighting();
 		cam.Setup(4, 1, 4, -M_PI / 4, 0);
 		glutPostRedisplay();
 	}
-}
+    if (key == 'f') {
+		blik = !blik;
+		glutPostRedisplay();
+	}
+	if (key == 'i') {
+		glFogi(GL_FOG_MODE, GL_LINEAR);
+		glutPostRedisplay();
+	}
+	if (key == 'u') {
+		glFogi(GL_FOG_MODE, GL_EXP);
+		glutPostRedisplay();
+	}
+    if (key == 'u') {
+		glFogi(GL_FOG_MODE, GL_EXP2);
+		glutPostRedisplay();
+	}
+	if (key == 'y') {
+		glFogi(GL_FOG_MODE, GL_EXP);
+		glutPostRedisplay();
+	}
+    if (key == 'k') {
+        glFogi(GL_FOG_MODE, GL_EXP);
+        GLfloat fogColorsp[] = { 0.9f, 0.2f, 0.1f, 1.0f };
+        glFogfv(GL_FOG_COLOR, fogColorsp);
+        glFogf(GL_FOG_DENSITY, 0.35f);
+        glHint(GL_FOG_HINT, GL_DONT_CARE);
+        glFogf(GL_FOG_START, 10.0f);
+        glFogf(GL_FOG_END, 50.0f);
+        glutPostRedisplay();
+    }
+    if (key == 'j') {
+        glFogi(GL_FOG_MODE, GL_EXP2);
+        GLfloat fogColorsp[] = { 0.8f, 0.6f, 0.3f, 1.0f };
+        glFogfv(GL_FOG_COLOR, fogColorsp);
+        glFogf(GL_FOG_DENSITY, 0.15f);
+        glHint(GL_FOG_HINT, GL_DONT_CARE);
+        glFogf(GL_FOG_START, 10.0f);
+        glFogf(GL_FOG_END, 50.0f);
+        glutPostRedisplay();
+    }
+	if (key == 't') {
+		(glIsEnabled(GL_FOG))?glDisable(GL_FOG):glEnable(GL_FOG);
+		glutPostRedisplay();
+	}
+};
+
 void mouseMove(int x, int y)
 {
-    // Переменные для хранения направления движения мыши
     int a = 0, b = 0;
-    
+
     // Определение направления движения по оси X
     if ((x - mouseX) > 0)
         a = 1; // Если мышь движется вправо
@@ -584,15 +717,15 @@ void mouseMove(int x, int y)
         b = 1; // Если мышь движется вверх
     if ((y - mouseY) < 0)
         b = -1; // Если мышь движется вниз
-    
-    // Поворот камеры по горизонтали в соответствии с движением мыши
+
+    // Поворот камеры на основе изменения положения мыши
     cam.TurnH(a, b, (x - mouseX), (y - mouseY));
-    
-    // Обновление текущих координат мыши
+
+    // Обновление предыдущего положения мыши
     mouseX = x;
     mouseY = y;
-    
-    // "Захват" мыши в центре окна, если она достигла края
+
+    // Проверка выхода мыши за границы окна и корректировка положения мыши при необходимости
     if ((mouseX != wight / 2))
     {
         if (mouseX < 20)
@@ -606,46 +739,45 @@ void mouseMove(int x, int y)
             glutWarpPointer(mouseX + 1, mouseY);
         }
     }
-    
-    // Обновление изображения
+
+    // Перерисовка окна для отображения обновленной сцены
     glutPostRedisplay();
 }
+
 void update(int value) {
-    // Увеличение угла вращения куба
-	angle += i * 2.0f;
-    
-    // Проверка на превышение угла 360 градусов
-	if (angle > 360) {
-		angle -= 360;
-	}
-    
-    // Обновление изображения
-	glutPostRedisplay();
-    
-    // Установка таймера для следующего обновления
-	glutTimerFunc(10, update, 0);
+    static bool isIdleMode = false; // Флаг для определения режима работы функции
+
+    /* 
+    функция update() используется как единая функция 
+    для обновления состояния сцены 
+    как во время активного движения (анимации), 
+    так и в режиме простоя (когда нет активных действий пользователя). 
+    */
+
+    if (!isIdleMode) {
+        // angle += i * 2.0f;
+        if (angle > 360) {
+            angle -= 360;
+        }
+    } else {
+        angle += 0.5f;
+        if (angle > 360.0f)
+            angle -= 360.0f;
+    }
+
+    // Перерисовываем окно
+    glutPostRedisplay();
+
+    // Устанавливаем таймер для следующего обновления в зависимости от режима
+    if (!isIdleMode)
+        glutTimerFunc(10, update, 0);
+    else
+        glutTimerFunc(25, update, 0);
 }
+
 #pragma endregion
 
 int main(int argc, char* argv[]) {
-
-	// printf("Управление:\n");
-    // printf("WASD: Движение камеры вперед, назад, влево и вправо\n");
-    // printf("1-4: Включение и выключение источников света\n");
-    // printf("5: Включение или выключение цветового материала и установка цвета фонового освещения\n");
-    // printf("6: Включение или выключение двустороннего освещения\n");
-    // printf("7: Включение отражения\n");
-    // printf("8: Установка положения наблюдателя\n");
-    // printf("9: Установка распределения освещения в пространстве\n");
-    // printf("0: Сброс настроек освещения\n");
-    // printf("F: Включение и выключение фонаря\n");
-    // printf("R: Перезагрузка настроек освещения\n");
-    // printf("Z: Загрузить модель Tricycle.obj\n");
-    // printf("X: Включение и выключение дополнительного источника света\n");
-    // printf("T: Включение и выключение куба\n");
-    // printf("Y: Включение и выключение вращения куба\n");
-    // printf("M: Сброс всех настроек\n");
-    // printf("ESC: Выход из программы\n");
 
     // Инициализация GLUT и создание окна
     glutInit(&argc, argv);

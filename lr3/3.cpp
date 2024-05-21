@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("Cube"); 
     glEnable(GL_DEPTH_TEST);  // Включение буфера глубины для правильного отображения глубины объектов
     glutDisplayFunc(display);
-    glutTimerFunc(50, TimerFunction, 0);  // Установка функции таймера
+    glutTimerFunc(50, TimerFunction, 15);  // Установка функции таймера
     glutMainLoop();
     return 0;
 }
