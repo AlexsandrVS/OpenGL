@@ -468,7 +468,7 @@ void display(void) {
             }
         }
 
-        // Рисуем тень тетраэдра
+        // тень тетраэдра
         glDisable(GL_LIGHTING);
         glPushMatrix();
         glTranslatef(-7, 0.1, -5.5);
@@ -480,7 +480,7 @@ void display(void) {
         glEnable(GL_LIGHTING);
     }
 
-    // Добавляем шар для отображения блика
+    // шар для отображения блика
     if (blik) {
         glPushMatrix();
         glTranslatef(0, 1, 0);
@@ -610,21 +610,21 @@ void processNormalKeys(unsigned char key, int x, int y) {
 	// if (key == '6') {
     //     (glIsEnabled(GL_COLOR_MATERIAL)) ? glDisable(GL_COLOR_MATERIAL) : (glEnable(GL_COLOR_MATERIAL), glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE), glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE));
 	// }
-	// if (key == '7') {
-	// 	if (glIsEnabled(GL_COLOR_MATERIAL))
-	// 		glDisable(GL_COLOR_MATERIAL);
-	// 	else
-	// 		glEnable(GL_COLOR_MATERIAL);
-	// 	// Устанавливаем цвет материала
-    //     GLfloat specref[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+	if (key == '7') {
+		if (glIsEnabled(GL_COLOR_MATERIAL))
+			glDisable(GL_COLOR_MATERIAL);
+		else
+			glEnable(GL_COLOR_MATERIAL);
+		// Устанавливаем цвет материала
+        GLfloat specref[] = { 1.0f, 1.0f, 1.0f, 1.0f};
 
-    //     // Свойства материалов согласуются с кодами glColor
-    //     glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+        // Свойства материалов согласуются с кодами glColor
+        glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
-    //     // С этого момента все материалы имеют максимальный коэффициент зеркального отражения
-    //     glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
-    //     glMateriali(GL_FRONT, GL_SHININESS, 1);
-	// }
+        // С этого момента все материалы имеют максимальный коэффициент зеркального отражения
+        glMaterialfv(GL_FRONT, GL_SPECULAR, specref);
+        glMateriali(GL_FRONT, GL_SHININESS, 1);
+	}
 	// if (key == '8') {
 	// 	GLfloat viewer_pos[] = { 1.0f, 0.0f, 1.0f, 0.0f };
 	// 	glLightModelfv(GL_LIGHT_MODEL_LOCAL_VIEWER, viewer_pos);
@@ -782,7 +782,7 @@ int main(int argc, char* argv[]) {
     // Инициализация GLUT и создание окна
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-    glutInitWindowSize(1200, 800); // Задайте желаемый размер окна
+    glutInitWindowSize(1200, 800);
     glutCreateWindow("OpenGL");
 
     // Включить проверку глубины
