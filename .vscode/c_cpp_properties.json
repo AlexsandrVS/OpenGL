@@ -8,7 +8,8 @@
                 "/usr/include/assimp/**",
                 "/usr/include/c++/13/x86_64-redhat-linux/32/bits",
                 "/usr/include/assimp-master/include/assimp",
-                "/usr/include/assimp-master/include"
+                "/usr/include/assimp-master/include",
+                "${workspaceFolder}/lr6"
             ],
             "defines": [],
             "compilerPath": "/usr/lib64/ccache/gcc",

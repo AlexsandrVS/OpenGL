@@ -1,10 +1,10 @@
 #include "GL/glut.h"
 #include <iostream>
 
-const int rows = 7; // Количество строк
-const int cols = 5; // Количество столбцов
+const int rows = 6; // Количество строк
+const int cols = 6; // Количество столбцов
 
-const int cellSize = 100; // Размер клетки
+const int cellSize = 150; // Размер клетки
 
 // Перечисление для цветов
 enum CellColor {
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(cols * cellSize, rows * cellSize);
     glutInitWindowPosition(100, 100); // Позиция окна
-    glutCreateWindow("Clickable Grid");
+    glutCreateWindow("Clickable");
     glutDisplayFunc(RenderScene);
     glutMouseFunc(MouseFunc);
     SetupRC();
