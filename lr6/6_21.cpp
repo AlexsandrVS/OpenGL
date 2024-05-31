@@ -2,7 +2,7 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "tga.h" // Предполагается, что tga.h и tga.cpp включены в проект
+#include "tga.h"
 
 GLuint textures[2];
 
