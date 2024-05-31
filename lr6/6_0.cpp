@@ -6,7 +6,7 @@
 const int rows = 6; // Количество строк
 const int cols = 6; // Количество столбцов
 
-const int cellSize = 150; // Размер клетки
+const int cellSize = 120; // Размер клетки
 
 // Перечисление для цветов
 enum CellColor {
@@ -16,7 +16,8 @@ enum CellColor {
     BLUE,
     YELLOW,
     MASK1,
-    MASK2
+    MASK2,
+    MASK3
 };
 
 void ApplyMask(CellColor maskColor);
@@ -32,30 +33,64 @@ struct Cell {
 
 Cell cells[rows][cols]; // Двумерный массив клеток
 
-GLubyte mask1[24*20] = {
+    GLubyte mask1[128] = {   0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x0F, 0xFF, 0xFF, 0xF0,
+                            0x0F, 0xFF, 0xFF, 0xF0,
+                            0x0F, 0xFF, 0xFF, 0xF0,
+                            0x0F, 0xFF, 0xFF, 0xF0,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0xFF, 0xFF, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00 };
+
+GLubyte mask4[60] = {
     0x00, 0x00, 0x00, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
+    0x00, 0x00, 0x00, 
+    0x00, 0x00, 0x00, 
+    0x00, 0x00, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
+    0x00, 0xFF, 0x00, 
     0x0F, 0xFF, 0xF0, 
     0x0F, 0xFF, 0xF0, 
     0x00, 0x00, 0x00
 };
 
-GLubyte mask2[16*12] = {
+
+GLubyte mask2[24] = {
     0x01, 0xFC, 
     0x03, 0xFE, 
     0x03, 0x7C, 
@@ -100,45 +135,25 @@ float randomBlue = static_cast<float>(rand()) / RAND_MAX;    // Генераци
                 case YELLOW:
                     glColor3f(1.0f, 1.0f, 0.0f); // Желтый цвет
                     break;
+                case MASK3:
+                    glColor3f(randomRed, randomGreen, randomBlue); // Установка случайного цвета
+                    glRasterPos2i(cell.x + cell.width / 2-10, cell.y - cell.height / 2-10);
+                    glBitmap(24, 20, 0, 0, 0, 0, mask4);
+                    continue;
                 case MASK1:
-                    // glColor3f(1.0f, 0.0f, 0.0f); // Цвет маски
-                    // glEnable(GL_POLYGON_STIPPLE); // Включаем маску
-                    // glPolygonStipple(mask1);      // Задаем маску
-
-                    // glBegin(GL_QUADS);            // Начинаем рисовать четырехугольники
-                    // glVertex2f(cell.x, cell.y);                   // Вершина 1
-                    // glVertex2f(cell.x + cell.width, cell.y);      // Вершина 2
-                    // glVertex2f(cell.x + cell.width, cell.y - cell.height); // Вершина 3
-                    // glVertex2f(cell.x, cell.y - cell.height);     // Вершина 4
-                    // glEnd();                       // Заканчиваем рисовать четырехугольники
-
-                    // glDisable(GL_POLYGON_STIPPLE); // Выключаем маску
-                    // break;
-                    glColor3f(randomRed, randomGreen, randomBlue);               // Установка случайного цвета
-                    // Отрисовываем текст в центре клетки
-                    glRasterPos2i(cell.x + cell.width / 2 - 3, cell.y - cell.height / 2 + 2);
-                    glBitmap(24, 20, 0, 0, 0, 0, mask1);
+                    glColor3f(randomRed, randomGreen, randomBlue); // Установка случайного цвета
+                    // Установка правильной позиции растра
+                    glRasterPos2i(cell.x + cell.width / 2-10, cell.y - cell.height / 2-10);
+                    glBitmap(32, 32, 0, 0, 0, 0, mask1);
                     continue;
 
                 case MASK2:
-                    // glColor3f(0.0f, 1.0f, 1.0f); // Цвет маски
-                    // glEnable(GL_POLYGON_STIPPLE); // Включаем маску
-                    // glPolygonStipple(mask2);      // Задаем маску
-
-                    // glBegin(GL_QUADS);            // Начинаем рисовать четырехугольники
-                    // glVertex2f(cell.x, cell.y);                   // Вершина 1
-                    // glVertex2f(cell.x + cell.width, cell.y);      // Вершина 2
-                    // glVertex2f(cell.x + cell.width, cell.y - cell.height); // Вершина 3
-                    // glVertex2f(cell.x, cell.y - cell.height);     // Вершина 4
-                    // glEnd();                       // Заканчиваем рисовать четырехугольники
-
-                    // glDisable(GL_POLYGON_STIPPLE); // Выключаем маску
-                   glColor3f(randomRed, randomGreen, randomBlue);               // Установка случайного цвета
-                    // Отрисовываем текст в центре клетки
-                    glRasterPos2i(cell.x + cell.width / 2 - 3, cell.y - cell.height / 2 + 2);
+                    glColor3f(randomRed, randomGreen, randomBlue);               // Установка случайного цвета
+                    glRasterPos2i(cell.x + cell.width / 2 - 5, cell.y - cell.height / 2 -2);
                     glBitmap(16, 12, 0, 0, 0, 0, mask2);
                     continue;
             }
+
             glBegin(GL_QUADS);
             glVertex2i(cell.x, cell.y);
             glVertex2i(cell.x + cell.width, cell.y);
@@ -202,6 +217,9 @@ void MouseFunc(int button, int state, int x, int y) {
                             cells[i][j].color = MASK1;
                             break;
                         case MASK1:
+                            cells[i][j].color = MASK3;
+                            break;
+                        case MASK3:
                             cells[i][j].color = WHITE;
                             break;
                     }
@@ -212,6 +230,10 @@ void MouseFunc(int button, int state, int x, int y) {
             }
         }
     }
+}
+
+int GenerateRandomMaskIndex() {
+    return rand() % 2+1;
 }
 
 void KeyboardFunc(unsigned char key, int x, int y) {
