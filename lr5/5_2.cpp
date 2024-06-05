@@ -6,7 +6,7 @@
 #include <math.h>
 
 static GLfloat zPos = -62.0f;
-unsigned int texture[4];
+unsigned int texture[5];
 
 void ProcessMenu(int value)
 {
@@ -46,7 +46,7 @@ void SetupRC()
     glEnable(GL_TEXTURE_2D);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
     int width, height, cnt;
-    glGenTextures(6, texture);
+    glGenTextures(7, texture);
 
     // Texture 1
     unsigned char* data1 = stbi_load("1.jpg", &width, &height, &cnt, 0);
@@ -113,6 +113,17 @@ void SetupRC()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(data6);
+
+    // Texture 5
+    unsigned char* data7 = stbi_load("7.jpg", &width, &height, &cnt, 0);
+    glBindTexture(GL_TEXTURE_2D, texture[6]);
+    gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, width, height, GL_RGB, GL_UNSIGNED_BYTE, data7);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    stbi_image_free(data7);
 }
 
 void SpecialKeys(int key, int x, int y)
@@ -148,7 +159,7 @@ void RenderScene(void)
     glPushMatrix();
     glTranslatef(0.0f, 0.0f, zPos);
 
-    for (z = 50.0f; z > 0.0f; z -= 10)
+    for (z = 50.0f; z > 1.0f; z -= 10)
 	{
        
         glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -211,6 +222,45 @@ void RenderScene(void)
         glVertex3f(0.0f, 10.0f, z-10.0f);
         glEnd();
     }
+    glBindTexture(GL_TEXTURE_2D, texture[5]);
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3f(-10.0f, 10.0f, 30);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3f(-0.0f, 10.0f, 30);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3f(-0.0f, 10.0f, 30-10.0f);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex3f(-10, 10.0f, 30-10.0f);
+        glEnd();
+
+        // glBindTexture(GL_TEXTURE_2D, texture[5]);
+        // glBegin(GL_QUADS);
+        // glTexCoord2f(0.0f, 1.0f);
+        // glVertex3f(0, -10.0f, 0);
+        // glTexCoord2f(1.0f, 1.0f);
+        // glVertex3f(10, 0.0f, 0);
+        // glTexCoord2f(1.0f, 0.0f);
+        // glVertex3f(0, 10.0f, 0);
+        // glTexCoord2f(0.0f, 0.0f);
+        // glVertex3f(-10, 0.0f, 0);
+        // glEnd();
+
+        glBindTexture(GL_TEXTURE_2D, texture[6]);
+        glBegin(GL_POLYGON);
+        glTexCoord2f(0.2f, 0.0f);
+        glVertex3f(0.0f, -10.0f, 0.0f);
+        glTexCoord2f(0.0f, 0.75f);
+        glVertex3f(10, 0, 0.0f);
+        glTexCoord2f(0.5f, 1.0f);
+        glVertex3f(0, 10, 0.0f);
+        glTexCoord2f(1.0f, 0.75f);
+        glVertex3f(-10, 10, 0.0f);
+        glTexCoord2f(0.8f, 0.0f);
+        glVertex3f(-10, 0, 0.0f); 
+        glEnd();
+
+
     glPopMatrix();
     glutSwapBuffers();
 }

@@ -66,29 +66,43 @@ Cell cells[rows][cols]; // Двумерный массив клеток
                             0x00, 0x00, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00 };
 
-GLubyte mask4[60] = {
-    0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x00, 0xFF, 0x00, 
-    0x0F, 0xFF, 0xF0, 
-    0x0F, 0xFF, 0xF0, 
-    0x00, 0x00, 0x00
-};
+GLubyte mask11[48] = {      
+    0x00, 0x01, 0xFC, 0x00,
+    0x00, 0x03, 0xFE, 0x00,
+    0x00, 0x03, 0x7C, 0x00,
+    0x00, 0x02, 0x0E, 0x00,
+    0x00, 0x03, 0x15, 0x00,
+    0x00, 0x03, 0x2B, 0x00,
+    0x00, 0x00, 0x21, 0x00,
+    0x00, 0x00, 0x2D, 0x00,
+    0x00, 0x00, 0x33, 0x00,
+    0x00, 0x00, 0x23, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00
+                           };
 
+GLubyte mask4[80] = {
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x00, 0xFF, 0x00, 0x00,
+    0x0F, 0xFF, 0xF0, 0x00,
+    0x0F, 0xFF, 0xF0, 0x00,
+    0x00, 0x00, 0x00, 0x00
+};
 
 GLubyte mask2[24] = {
     0x01, 0xFC, 
@@ -137,20 +151,19 @@ float randomBlue = static_cast<float>(rand()) / RAND_MAX;    // Генераци
                     break;
                 case MASK3:
                     glColor3f(randomRed, randomGreen, randomBlue); // Установка случайного цвета
-                    glRasterPos2i(cell.x + cell.width / 2-10, cell.y - cell.height / 2-10);
-                    glBitmap(24, 20, 0, 0, 0, 0, mask4);
+                    glRasterPos2i(cell.x + cell.width / 2-16, cell.y - cell.height / 2-10);
+                    glBitmap(32, 20, 0, 0, 0, 0, mask4);
                     continue;
                 case MASK1:
-                    glColor3f(randomRed, randomGreen, randomBlue); // Установка случайного цвета
-                    // Установка правильной позиции растра
-                    glRasterPos2i(cell.x + cell.width / 2-10, cell.y - cell.height / 2-10);
+                    glColor3f(randomRed, randomGreen, randomBlue);
+                    glRasterPos2i(cell.x + cell.width / 2-16, cell.y - cell.height / 2-16);
                     glBitmap(32, 32, 0, 0, 0, 0, mask1);
                     continue;
 
                 case MASK2:
-                    glColor3f(randomRed, randomGreen, randomBlue);               // Установка случайного цвета
-                    glRasterPos2i(cell.x + cell.width / 2 - 5, cell.y - cell.height / 2 -2);
-                    glBitmap(16, 12, 0, 0, 0, 0, mask2);
+                    glColor3f(randomRed, randomGreen, randomBlue);
+                    glRasterPos2i(cell.x + cell.width / 2 - 16, cell.y - cell.height / 2 - 6);
+                    glBitmap(32, 12, 0, 0, 0, 0, mask11);
                     continue;
             }
 
@@ -166,7 +179,6 @@ float randomBlue = static_cast<float>(rand()) / RAND_MAX;    // Генераци
     glFlush();
 }
 
-// Устанавливаем начальное состояние OpenGL
 void SetupRC(void) {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // цвет фона
     glMatrixMode(GL_PROJECTION);
@@ -284,7 +296,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("OpenGL");
     glutDisplayFunc(RenderScene);
     glutMouseFunc(MouseFunc);
-    glutKeyboardFunc(KeyboardFunc); // Регистрируем обработчик клавиатуры
+    glutKeyboardFunc(KeyboardFunc); 
     SetupRC();
     glutMainLoop();
     return 0;
